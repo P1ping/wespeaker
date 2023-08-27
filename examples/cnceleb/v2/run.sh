@@ -12,8 +12,8 @@ stop_stage=-1
 data=data
 data_type="shard"  # shard/raw
 
-config=conf/resnet.yaml
-exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+config=conf/ecapa_tdnn.yaml
+exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
 gpus="[0,1]"
 num_avg=10
 checkpoint=
@@ -23,7 +23,7 @@ score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
 
 # setup for large margin fine-tuning
-lm_config=conf/resnet_lm.yaml
+lm_config=conf/ecapa_tdnn_lm.yaml
 
 . tools/parse_options.sh || exit 1
 
@@ -147,4 +147,22 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
       --trials "$trials" \
       --score_norm_method ${score_norm_method} \
       --top_n ${top_n}
+fi
+
+
+# ================== DINO-based SSL Pre-training ==================
+if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
+  echo "DINO SSL training ..."
+  num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
+  torchrun --master_addr=localhost --master_port=16888 --nnodes=1 --nproc_per_node=$num_gpus \
+    wespeaker/ssl/bin/train_dino.py --config $config \
+      --exp_dir ${exp_dir} \
+      --gpus $gpus \
+      --num_avg ${num_avg} \
+      --data_type "${data_type}" \
+      --train_data ${data}/cnceleb_train/${data_type}.list \
+      --wav_scp ${data}/cnceleb_train/wav.scp \
+      --reverb_data ${data}/rirs/lmdb \
+      --noise_data ${data}/musan/lmdb \
+      ${checkpoint:+--checkpoint $checkpoint}
 fi
