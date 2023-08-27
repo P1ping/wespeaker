@@ -26,9 +26,12 @@ data=data
 . tools/parse_options.sh
 set -e
 
-data_name_array=("cnceleb_train" "eval")
-data_list_path_array=("${data}/cnceleb_train/${data_type}.list" "${data}/eval/${data_type}.list")
-data_scp_path_array=("${data}/cnceleb_train/wav.scp" "${data}/eval/wav.scp")
+# data_name_array=("cnceleb_train" "eval")
+# data_list_path_array=("${data}/cnceleb_train/${data_type}.list" "${data}/eval/${data_type}.list")
+# data_scp_path_array=("${data}/cnceleb_train/wav.scp" "${data}/eval/wav.scp")
+data_name_array=("eval")
+data_list_path_array=("${data}/eval/${data_type}.list")
+data_scp_path_array=("${data}/eval/wav.scp")
 nj_array=($nj $nj)
 batch_size_array=(16 1) # batch_size of test set must be 1 !!!
 num_workers_array=(4 1)
